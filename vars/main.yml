@@ -1,0 +1,22 @@
+---
+# vars file for ansible-role-nginx_controller_user
+
+# nginx_controller_user:
+#   metadata:
+#     name:  # the *email address* of the user account
+#     displayName:   # a friendly display name for the user (spaces and special characters allowed)
+#     description:  # a description of the user
+#     tags:   # an array of tags
+#     - tagOne
+#     - tagTwo
+#   desiredState:
+#     firstName:  # the user first name
+#     lastName:  # the user last name
+#     password: # the user password
+#     verifyPassword:  # the user current password.  Used when existing user updates their own account
+#     roles:  # reference(s) to security Roles the user is a member of
+#     - ref: "/platform/roles/admin"
+#     - ref: "/platform/roles/user"
+#     groups:  # 3.7 reference(s) to security Groups the user is a member of
+#     - ref: "/platform/groups/finance"
+

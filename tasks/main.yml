@@ -1,0 +1,79 @@
+---
+# tasks file for ansible-role-nginx_controller_user
+
+- name: Fail if required variables are not defined
+  assert:
+    that: ("{{ item }} is defined") and ("{{ item }} | length > 0")
+  loop:
+    - nginx_controller_api_version
+    - nginx_controller_fqdn
+    - nginx_controller_auth_token
+    - nginx_controller_user.metadata.name
+
+- name: Form the user url
+  set_fact:
+    nginx_controller_user_url: >-
+      https://{{ nginx_controller_fqdn }}/{{ nginx_controller_api_version }}/platform/users
+
+- debug: var=nginx_controller_user
+
+- name: Test for user
+  uri:
+    url: "{{ nginx_controller_user_url }}/{{ nginx_controller_user.metadata.name }}"
+    method: "GET"
+    status_code:
+      - 200
+      - 201
+      - 404
+    return_content: yes
+    validate_certs: "{{ nginx_controller_validate_certs | default(false) }}"
+    headers:
+      Cookie: "{{ nginx_controller_auth_token }}"
+  register: nginx_controller_user_status
+
+- name: insert name as email if new user account so same not defined twice
+  set_fact:
+    new_nginx_controller_user: "{{ nginx_controller_user | combine({ 'desiredState': { 'email': nginx_controller_user.metadata.name }}, recursive=True) }}"
+  when: nginx_controller_user_status.status == 404
+
+- name: create if user account is new
+  uri:
+    url: "{{ nginx_controller_user_url }}"
+    method: "POST"
+    body: "{{ new_nginx_controller_user }}"
+    body_format: json
+    status_code:
+      - 200
+      - 201
+      - 202
+    return_content: yes
+    validate_certs: "{{ nginx_controller_validate_certs | default(false) }}"
+    headers:
+      Cookie: "{{ nginx_controller_auth_token }}"
+  when: nginx_controller_user_status.status == 404
+  register: nginx_controller_user_current_status
+  ignore_errors: false
+
+- name: form the user patch URL
+  set_fact:
+    nginx_controller_user_patch_url: >-
+      https://{{ nginx_controller_fqdn }}/{{ nginx_controller_api_version }}/platform/users/{{ nginx_controller_user.metadata.name }}
+  when: nginx_controller_user_status.status != 404
+
+- name: update if user account is present
+  uri:
+    url: "{{ nginx_controller_user_patch_url }} "
+    method: "PATCH"
+    body: "{{ nginx_controller_user }}"
+    body_format: json
+    status_code:
+      - 200
+      - 201
+      - 202
+    return_content: yes
+    validate_certs: "{{ nginx_controller_validate_certs | default(false) }}"
+    headers:
+      Cookie: "{{ nginx_controller_auth_token }}"
+  when: nginx_controller_user_status.status != 404
+  register: nginx_controller_user_current_status
+  ignore_errors: false
