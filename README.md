@@ -29,7 +29,7 @@ Dependencies
 Example Playbook
 ----------------
 
-To use this role you can create a playbook such as the following (let's name it `nginx_controller_environment.yaml` for the purposes of this example).
+To use this role you can create a playbook such as the following (let's name it `nginx_controller_user.yaml` for the purposes of this example).
 
 ```yaml
 - hosts: localhost

@@ -1,0 +1,32 @@
+---
+- name: Converge
+  hosts: controllers
+
+  vars:
+    nginx_controller_validate_certs: false
+    nginx_controller_fqdn: mock-server.molecule-test:1080
+    nginx_controller_auth_token: "ABC123"
+    nginx_controller_user_email: "user@example.com"  # Required by nginx_controller_generate_token role
+    nginx_controller_user_password: "mySecurePassword"  # Required by nginx_controller_generate_token role
+    nginx_controller_user:
+      metadata:
+        name: "bob@example.com"  # the *email address* of the user account
+        displayName: "Bob Smith"  # a friendly display name for the user (spaces and special characters allowed)
+        description: "This is Bob Smith's account"  # a description of the user
+        tags:  # an array of tags
+          - tagOne
+          - tagTwo
+      desiredState:
+        firstName:  # the user first name
+        lastName:  # the user last name
+        password:  # the user password
+        verifyPassword:  # the user current password. Used when existing user updates their own account
+        roles:  # reference(s) to security Roles the user is a member of
+          - ref: "/platform/roles/user"
+        groups:  # 3.7 reference(s) to security Groups the user is a member of
+          - ref:
+
+  tasks:
+    - name: Call User Role (existing user scenario)
+      include_role:
+        name: ansible-role-nginx_controller_user
