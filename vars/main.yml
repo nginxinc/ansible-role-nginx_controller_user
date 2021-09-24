@@ -19,4 +19,3 @@
 #     - ref: "/platform/roles/user"
 #     groups:  # 3.7 reference(s) to security Groups the user is a member of
 #     - ref: "/platform/groups/finance"
-

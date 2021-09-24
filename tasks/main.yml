@@ -15,8 +15,6 @@
     nginx_controller_user_url: >-
       https://{{ nginx_controller_fqdn }}/{{ nginx_controller_api_version }}/platform/users
 
-- debug: var=nginx_controller_user
-
 - name: Test for user
   uri:
     url: "{{ nginx_controller_user_url }}/{{ nginx_controller_user.metadata.name }}"
@@ -25,18 +23,18 @@
       - 200
       - 201
       - 404
-    return_content: yes
+    return_content: true
     validate_certs: "{{ nginx_controller_validate_certs | default(false) }}"
     headers:
       Cookie: "{{ nginx_controller_auth_token }}"
   register: nginx_controller_user_status
 
-- name: insert name as email if new user account so same not defined twice
+- name: Insert name as email if new user account so same not defined twice
   set_fact:
     new_nginx_controller_user: "{{ nginx_controller_user | combine({ 'desiredState': { 'email': nginx_controller_user.metadata.name }}, recursive=True) }}"
   when: nginx_controller_user_status.status == 404
 
-- name: create if user account is new
+- name: Create if user account is new
   uri:
     url: "{{ nginx_controller_user_url }}"
     method: "POST"
@@ -46,7 +44,7 @@
       - 200
       - 201
       - 202
-    return_content: yes
+    return_content: true
     validate_certs: "{{ nginx_controller_validate_certs | default(false) }}"
     headers:
       Cookie: "{{ nginx_controller_auth_token }}"
@@ -54,13 +52,13 @@
   register: nginx_controller_user_current_status
   ignore_errors: false
 
-- name: form the user patch URL
+- name: Form the user patch URL
   set_fact:
     nginx_controller_user_patch_url: >-
       https://{{ nginx_controller_fqdn }}/{{ nginx_controller_api_version }}/platform/users/{{ nginx_controller_user.metadata.name }}
   when: nginx_controller_user_status.status != 404
 
-- name: update if user account is present
+- name: Update if user account is present
   uri:
     url: "{{ nginx_controller_user_patch_url }} "
     method: "PATCH"
@@ -70,7 +68,7 @@
       - 200
       - 201
       - 202
-    return_content: yes
+    return_content: true
     validate_certs: "{{ nginx_controller_validate_certs | default(false) }}"
     headers:
       Cookie: "{{ nginx_controller_auth_token }}"
